@@ -1,0 +1,45 @@
+from KeepFunChat.tools import convert_cqhttp_source, convert_cqhttp_target, prefix
+from KeepFunChat.event import ChatData, on_startup  # 导入ChatData类和on_startup装饰器
+from KeepFunChat.core import Coromega, logger  # 导入coromega核心模块和日志记录器
+coromega = Coromega()
+# 使用on_startup装饰器，在程序启动时执行该函数
+@on_startup()
+async def startup(omega):
+   # 启动coromega模块，传入omega对象
+    coromega.run(omega)
+
+# 使用coromega模块的when_chat_msg装饰器，当接收到聊天消息时执行该函数
+@coromega.when_chat_msg()
+async def game_to_qq(chat_data: ChatData):
+    raw_msg = chat_data.raw_msg
+    name = chat_data.name
+    if not name and not coromega.config["启用所有消息转发"]: return
+    message = f"<{name}> {raw_msg}"
+    if not name: message = raw_msg
+    if prefix(message, coromega.config["游戏消息没有这些前缀时才转发"]) and not prefix(message, coromega.config["游戏消息满足以下任一前缀时才转发"]): return
+    for source in coromega.config["游戏消息转发的目标"]:
+        source_type, source_id = convert_cqhttp_source(source)
+        await coromega.cqhttp.send_msg({
+            f"{source_type}_id": source_id,
+            "message": coromega.config["QQ群内接受服务器内转发消息的前缀"] + message,
+            "auto_escape": True # 避免CQ码乱转义
+        })
+
+@coromega.when_cqhttp_msg()
+async def qq_to_game(chat_data: ChatData):
+    message = chat_data.raw_msg
+    if prefix(message, coromega.config["QQ消息满足以下任一前缀时才处理命令"]):
+        command = message[1:]
+        for target, commands in coromega.config["命令权限"].items:
+            if (target == "*" or chat_data.user_id == convert_cqhttp_target(target).user_id) and prefix(command, commands):
+                coromega.send_player_cmd(message)
+                break
+            await coromega.cqhttp.send_msg({
+                f"{chat_data.message_type}_id": chat_data.source_id,
+                "message": "你没有权限使用该命令"
+            })
+        return
+    if prefix(message, coromega.config["QQ消息没有这些前缀时才转发"]) and not prefix(message, coromega.config["QQ消息满足以下任一前缀时才转发"]): return
+    player = coromega.get_player("@a")
+    player.selector = player.player_name
+    await player.say(coromega.config["服务器内接受QQ群内转发消息的前缀"] + message)
