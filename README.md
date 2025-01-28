@@ -1,0 +1,2 @@
+# KeepFunChat
+一个使用TTS和ADB的Minecraft聊天框插件框架
