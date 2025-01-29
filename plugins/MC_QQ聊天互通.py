@@ -31,7 +31,7 @@ async def qq_to_game(chat_data: ChatData):
     if prefix(message, coromega.config["QQ消息满足以下任一前缀时才处理命令"]):
         command = message[1:]
         for target, commands in coromega.config["命令权限"].items():
-            if (target == "*" or chat_data.user_id == convert_cqhttp_target(target).user_id) and prefix(command, commands):
+            if (target == "*" or chat_data.user_id == convert_cqhttp_target(target).get("user_id", None)) and prefix(command, commands):
                 coromega.send_player_cmd(message)
                 break
             await coromega.cqhttp.send_msg({
