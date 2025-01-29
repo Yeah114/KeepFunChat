@@ -27,7 +27,7 @@ async def game_to_qq(chat_data: ChatData):
 
 @coromega.when_cqhttp_msg()
 async def qq_to_game(chat_data: ChatData):
-    message = chat_data.raw_msg
+    message = f"<{chat_data.name}> {chat_data.raw_msg}"
     repost = False
     for source in coromega.config["消息互通目标"]:
         source_type, source_id = convert_cqhttp_source(source)

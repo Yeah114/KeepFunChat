@@ -494,8 +494,8 @@ class Builder:
             return
         if build_operation["type"] == "execute_command":
             width, height = device.window_size() # 获取设备屏幕分辨率
-            center_x = width // 2 # 计算屏幕中心点X坐标
-            center_y = height // 2 # 计算屏幕中心点Y坐标
+            center_x = width # 计算屏幕点X坐标
+            center_y = 0 # 计算屏幕点Y坐标
             device.click(center_x, center_y) # 点击屏幕中心点
             time.sleep(ChatBoxCloseDelay)
             device._broadcast("clipper.set", {"text": build_operation["data"][1:]})
@@ -515,7 +515,7 @@ class Builder:
             
             # 打开命令方块
             width, height = device.window_size() # 获取设备屏幕分辨率
-            center_x = width // 2 # 计算屏幕中心点X坐标
+            center_x = width # 计算屏幕点X坐标
             center_y = height // 2 # 计算屏幕中心点Y坐标
             device.click(center_x, center_y) # 点击屏幕中心点
             time.sleep(OpenCommandBlockDelay)
