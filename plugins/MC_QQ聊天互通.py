@@ -40,7 +40,7 @@ async def qq_to_game(chat_data: ChatData):
         execute = False
         for target, commands in coromega.config["命令权限"].items():
             if (target == "*" or chat_data.user_id == convert_cqhttp_target(target).get("user_id", None)) and prefix(command, commands):
-                coromega.send_player_cmd(message)
+                await coromega.send_player_cmd(message)
                 execute = True
                 break
         if not execute:
