@@ -13,7 +13,7 @@ if ($IsWindows) {
     winget install --id Python.Python.3 --accept-package-agreements --accept-source-agreements
 
     # 换源 pip
-    python -m pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+    python -m pip config set global.index-url https://pypi.tuna.tsinghua.cn/simple
     # 更新 pip 并安装 Python 包
     python -m pip install --upgrade pip setuptools
     python -m pip install BDXConverter uiautomator2 websockets tqdm rich prompt_toolkit requests
@@ -28,6 +28,27 @@ if ($IsWindows) {
 
     # 安装 uvicorn 和 fastapi
     python -m pip install uvicorn fastapi
+
+    # 安装 ADB
+    Write-Host "Installing ADB..."
+    $adbUrl = "https://googledownloads.cn/android/repository/platform-tools-latest-windows.zip"
+    $adbZipPath = "$env:TEMP\platform-tools-latest-windows.zip"
+    $adbExtractPath = "$env:TEMP\platform-tools"
+
+    # 下载 ADB 压缩包
+    Invoke-WebRequest -Uri $adbUrl -OutFile $adbZipPath
+
+    # 解压 ADB 压缩包
+    Expand-Archive -Path $adbZipPath -DestinationPath $adbExtractPath -Force
+
+    # 将 ADB 添加到系统环境变量
+    $adbPath = Join-Path $adbExtractPath "platform-tools"
+    $env:Path += ";$adbPath"
+    [Environment]::SetEnvironmentVariable("Path", $env:Path, [EnvironmentVariableTarget]::Machine)
+
+    # 删除临时文件
+    Remove-Item $adbZipPath -Force
+    Remove-Item $adbExtractPath -Recurse -Force
 
     Write-Host "Setup completed."
 } else {
