@@ -1,8 +1,82 @@
-import re, json, inspect, ctypes, asyncio, websockets, queue
+import re, json, inspect, ctypes, asyncio, websockets, logging, requests, os, zipfile, tempfile, shutil, sys
 from tqdm.rich import tqdm
 from .config import data_dir
-import logging
 logger = logging.getLogger("Yeah")
+
+def restart_program():
+    logger.info("正在重启程序...")
+    python = sys.executable
+    os.execl(python, python, *sys.argv)
+
+def get_zip_file_size(zip_path):
+    """获取压缩包内所有文件的总大小"""
+    total_size = 0
+    with zipfile.ZipFile(zip_path, 'r') as z:
+        for info in z.infolist():
+            total_size += info.file_size
+    return total_size
+
+def extract_zip_with_progress(zip_path, extract_path):
+    """带进度条地解压压缩包"""
+    with zipfile.ZipFile(zip_path, 'r') as z:
+        total_size = get_zip_file_size(zip_path)
+        extracted_size = 0
+
+        with tqdm(total=total_size, unit='B', unit_scale=True, desc='解压压缩包') as pbar:
+            for file in z.infolist():
+                z.extract(file, extract_path)
+                extracted_size += file.file_size
+                pbar.update(file.file_size)
+
+def update_directory(zip_path, zip_folder, target_folder):
+    """更新目标文件夹内容"""
+    # 创建一个临时文件夹
+    with tempfile.TemporaryDirectory() as temp_dir:
+        logger.info(f"压缩包 {zip_path} 将被解压到目录 {temp_dir}")
+        # 解压压缩包到临时文件夹
+        extract_zip_with_progress(zip_path, temp_dir)
+
+        # 获取压缩包内文件夹的完整路径
+        extracted_folder = os.path.join(temp_dir, zip_folder)
+
+        # 计算需要复制的文件数量
+        files_to_copy = []
+        for root, dirs, files in os.walk(extracted_folder):
+            for file in files:
+                src_file_path = os.path.join(root, file)
+                target_file_path = src_file_path.replace(extracted_folder, target_folder, 1)
+                if not os.path.exists(target_file_path) or \
+                   os.stat(src_file_path).st_size != os.stat(target_file_path).st_size or \
+                   os.stat(src_file_path).st_mtime > os.stat(target_file_path).st_mtime:
+                    files_to_copy.append((src_file_path, target_file_path))
+
+        # 创建进度条
+        with tqdm(total=len(files_to_copy), desc="更新文件") as progress_bar:
+            for src_file_path, target_file_path in files_to_copy:
+                # 创建目标文件夹（如果不存在）
+                os.makedirs(os.path.dirname(target_file_path), exist_ok=True)
+                # 复制文件
+                shutil.copy2(src_file_path, target_file_path)
+                # 更新进度条
+                progress_bar.update(1)
+
+def download_file(url: str, filename: str, size: int = 0):
+    # 发起网络请求获取文件内容
+    with requests.get(url, stream=True) as r:
+        # 获取文件总大小
+        total_size = int(r.headers.get('content-length', size))
+        # 初始化tqdm进度条
+        tqdm_bar = tqdm(total=total_size, unit='iB', unit_scale=True, desc=filename)
+        
+        # 以写入二进制的形式打开文件
+        with open(filename, 'wb') as f:
+            for data in r.iter_content(1024*1024): # 1024*1024 bytes each time
+                tqdm_bar.update(len(data))
+                f.write(data)
+        tqdm_bar.close()
+
+    if total_size != 0 and tqdm_bar.n != total_size:
+        logger.warning("下载的文件大小与预计文件大小不一致")
 
 def prefix(string, prefixes):
     for prefix in prefixes:

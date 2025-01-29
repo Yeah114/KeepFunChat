@@ -67,7 +67,7 @@ class Cqhttp:
         )
 
     async def on_connect(self, ws):
-        print("连接成功")
+        logger.info("CQHTTP 连接成功")
 
     async def on_message(self, ws, message):
         data = json.loads(message)

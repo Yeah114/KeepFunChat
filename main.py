@@ -1,4 +1,49 @@
-version = "v0.0.1"
+import time, os
+start_time = time.time()
+from tqdm.rich import tqdm, trange
+from pathlib import Path
+import threading, warnings
+warnings.filterwarnings("ignore")
+main_dir = Path(__file__).parent
+plugins_dir = main_dir / 'plugins'
+config_dir = main_dir / 'config'
+data_dir = main_dir / 'data'
+log_dir = main_dir / 'log'
+last_startup_time_filename = data_dir / "last_startup_time"
+class BackgroundProgressBar:
+    def __init__(self, total, postpone = 0.01, *args, **kwargs):
+        self.total = total
+        self.n = 0
+        self.time = 0
+        self.postpone = postpone
+        self.args = args
+        self.kwargs = kwargs
+
+    def start(self):
+        self.thread = threading.Thread(target=self._run)
+        self.thread.start()
+
+    def _run(self):
+        with tqdm(total = self.total, *self.args, **self.kwargs) as progress:
+            for _ in range(self.total):
+                if self.total <= self.n:
+                    progress.update(self.total - self.time)
+                    break
+                time.sleep(self.postpone / 2)
+                progress.update(1)
+                self.n += 1
+                self.time += 1
+
+    def stop(self):
+        self.n = self.total
+
+last_startup_time = 0
+if os.path.exists(last_startup_time_filename):
+    last_startup_time = float(open(last_startup_time_filename, "r", encoding = "utf-8").read())
+    program_loading_progress = BackgroundProgressBar(int(last_startup_time * 100), postpone = 0.01, desc = "正在启动程序")
+    program_loading_progress.start()
+
+version = open("version", "r", encoding="utf-8").read()
 import sys, io
 global display
 display = True
@@ -45,7 +90,6 @@ sys.stdout = Tee(original_stdout, original_stderr)
 sys.stderr = sys.stdout
 
 import atexit
-log_dir = None
 def on_exit():
     print("")
     text = "Good Bye! --by Yeah"
@@ -62,29 +106,26 @@ def on_exit():
     except:
         pass
     if record:
-        from pathlib import Path
         import datetime
         from KeepFunChat.tools import remove_ansi
         current_time = datetime.datetime.now()
         formatted_time = current_time.strftime('%Y-%m%d#%H:%M:%S.%f')
-        open((log_dir or Path('log')) / 'run' / f"{formatted_time}.log", "w+").write(remove_ansi(tee_instance.getvalue() or ""))
+        open(log_dir / 'run' / f"{formatted_time}.log", "w+").write(remove_ansi(tee_instance.getvalue() or ""))
     # 关闭StringIO对象
     tee_instance.captured_output.close()
 atexit.register(on_exit)
 
 from fastapi import FastAPI, Request
+from KeepFunChat.tools import remove_ansi, repair_skin_title, stop_thread, download_file, update_directory, restart_program
 from KeepFunChat.FunBuilder import Builder, connect_to_device, handler, init_clipper, start_clipper_service
 from KeepFunChat.manager import CallbackManager, Cqhttp
 from KeepFunChat.event import EventManager, event, EventData, ChatData
 from KeepFunChat.core import Coromega, logger
 from KeepFunChat.loader import load_plugins
 from KeepFunChat.config import config
-from KeepFunChat.tools import remove_ansi, repair_skin_title, stop_thread
 from fastapi.responses import PlainTextResponse
 from rich.logging import RichHandler
-from tqdm.rich import tqdm
-from pathlib import Path
-import uvicorn, os, asyncio, logging, datetime, threading, requests, queue, signal, time, inspect, tracemalloc
+import uvicorn, asyncio, logging, datetime, requests, queue, signal, time, inspect, tracemalloc, traceback
 tracemalloc.start()
 # Ctrl+C 信号处理
 def signal_handler(sig, frame):
@@ -110,11 +151,6 @@ q = queue.Queue()
 app = FastAPI()
 callback_manager = CallbackManager()
 builder = Builder()
-main_dir = Path(__file__).parent
-plugins_dir = main_dir / 'plugins'
-config_dir = main_dir / 'config'
-data_dir = main_dir / 'data'
-log_dir = main_dir / 'log'
 today = str(datetime.date.today())
 address = f'{config["主机"]}:{config["端口"]}'
 process_id = os.getpid()
@@ -213,6 +249,45 @@ def run_server():
 
 def main():
     global device, display
+    end_time = time.time()
+    startup_time = round(end_time - start_time, 2)
+    try:
+        program_loading_progress.stop()
+    except:
+        pass
+    time.sleep(0.02)
+    logger.info(f"启动用时：{startup_time}秒")
+    open(data_dir / "last_startup_time", "w+", encoding = "utf-8").write(str(startup_time))
+    logger.info(f"当前版本：{version}")
+    logger.info("正在获取更新中...")
+    new_version = None
+    try:
+        new_version = requests.get(f"https://ghproxy.cn/https://raw.githubusercontent.com/Yeah114/KeepFunChat/refs/heads/main/version")
+        new_version = new_version.text
+    except Exception as error:
+        tb = error.__traceback__
+        logger.error("获取更新失败：")
+        logger.error(''.join(traceback.format_tb(tb)))
+        logger.error(str(error))
+    if not new_version:
+        logger.warning("无法判断当前是否为最新版本")
+    elif version != new_version:
+        logger.info(f"检测到新版本：{new_version}")
+        logger.info("正在获取更新文件大小中...")
+        version_size = 0
+        try:
+            version_size = requests.get(f"https://ghproxy.cn/https://raw.githubusercontent.com/Yeah114/KeepFunChat/refs/heads/main/size")
+            version_size = int(version_size.text)
+            logger.info(f"更新文件大小为：{version_size}B")
+        except Exception as error:
+            tb = error.__traceback__
+            logger.error("获取更新文件大小失败：")
+            logger.error(''.join(traceback.format_tb(tb)))
+            logger.error(str(error))
+        logger.info("正在下载中...")
+        download_file("https://ghproxy.cn/https://github.com/Yeah114/KeepFunChat/archive/refs/heads/main.zip", "KeepFunChat.zip", version_size)
+        update_directory("KeepFunChat.zip", "KeepFunChat-main", ".")
+        restart_program()
     device = connect_to_device(config["默认连接设备"])
     if not device: return
     init_clipper(device, data_dir / "Clipper.apk")
