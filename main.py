@@ -288,7 +288,7 @@ def main():
             logger.error(str(error))
         logger.info("正在下载中...")
         download_file("https://ghproxy.cn/https://github.com/Yeah114/KeepFunChat/archive/refs/heads/main.zip", "KeepFunChat.zip", version_size)
-        update_directory("KeepFunChat.zip", "KeepFunChat-main", ".")
+        update_directory("KeepFunChat.zip", "KeepFunChat-main", ".", [".json"])
         restart_program()
     device = connect_to_device(config["默认连接设备"])
     if not device: return

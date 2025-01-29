@@ -30,8 +30,8 @@ def extract_zip_with_progress(zip_path, extract_path, auto_remove_zip = True):
     if auto_remove_zip:
         os.remove(zip_path)
 
-def update_directory(zip_path, zip_folder, target_folder):
-    """更新目标文件夹内容"""
+def update_directory(zip_path, zip_folder, target_folder, skip_extensions=None):
+    """更新目标文件夹内容，如果文件扩展名在扩展名列表中则不复制"""
     # 创建一个临时文件夹
     with tempfile.TemporaryDirectory() as temp_dir:
         logger.info(f"压缩包 {zip_path} 将被解压到目录 {temp_dir}")
@@ -47,6 +47,11 @@ def update_directory(zip_path, zip_folder, target_folder):
             for file in files:
                 src_file_path = os.path.join(root, file)
                 target_file_path = src_file_path.replace(extracted_folder, target_folder, 1)
+                # 检查文件扩展名是否在跳过列表中
+                if skip_extensions and any(file.lower().endswith(ext.lower()) for ext in skip_extensions) and os.path.exists(target_file_path):
+                    continue  # 如果文件扩展名在列表中，则跳过复制
+
+                # 只有当目标文件不存在，或者源文件大小或修改时间不同时才复制
                 if not os.path.exists(target_file_path) or \
                    os.stat(src_file_path).st_size != os.stat(target_file_path).st_size or \
                    os.stat(src_file_path).st_mtime > os.stat(target_file_path).st_mtime:
