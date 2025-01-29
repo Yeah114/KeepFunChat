@@ -16,7 +16,7 @@ def get_zip_file_size(zip_path):
             total_size += info.file_size
     return total_size
 
-def extract_zip_with_progress(zip_path, extract_path):
+def extract_zip_with_progress(zip_path, extract_path, auto_remove_zip = True):
     """带进度条地解压压缩包"""
     with zipfile.ZipFile(zip_path, 'r') as z:
         total_size = get_zip_file_size(zip_path)
@@ -27,6 +27,8 @@ def extract_zip_with_progress(zip_path, extract_path):
                 z.extract(file, extract_path)
                 extracted_size += file.file_size
                 pbar.update(file.file_size)
+    if auto_remove_zip:
+        os.remove(zip_path)
 
 def update_directory(zip_path, zip_folder, target_folder):
     """更新目标文件夹内容"""
