@@ -27,7 +27,8 @@ async def game_to_qq(chat_data: ChatData):
 
 @coromega.when_cqhttp_msg()
 async def qq_to_game(chat_data: ChatData):
-    message = f"<{chat_data.name}> {chat_data.raw_msg}"
+    raw_msg = chat_data.raw_msg
+    message = f"<{chat_data.name}> {raw_msg}"
     repost = False
     for source in coromega.config["消息互通目标"]:
         source_type, source_id = convert_cqhttp_source(source)
@@ -35,12 +36,12 @@ async def qq_to_game(chat_data: ChatData):
             repost = True 
             break
     if not repost: return
-    if prefix(message, coromega.config["QQ消息满足以下任一前缀时才处理命令"]):
-        command = message[1:]
+    if prefix(raw_msg, coromega.config["QQ消息满足以下任一前缀时才处理命令"]):
+        command = raw_msg[1:]
         execute = False
         for target, commands in coromega.config["命令权限"].items():
             if (target == "*" or chat_data.user_id == convert_cqhttp_target(target).get("user_id", None)) and (prefix(command, commands) or "" in commands):
-                await coromega.send_player_cmd(message)
+                await coromega.send_player_cmd(raw_msg)
                 execute = True
                 break
         if not execute:
@@ -49,7 +50,7 @@ async def qq_to_game(chat_data: ChatData):
                 "message": "你没有权限使用该命令"
             })
         return
-    if prefix(message, coromega.config["QQ消息没有这些前缀时才转发"]) and not prefix(message, coromega.config["QQ消息满足以下任一前缀时才转发"]): return
+    if prefix(raw_msg, coromega.config["QQ消息没有这些前缀时才转发"]) and not prefix(raw_msg, coromega.config["QQ消息满足以下任一前缀时才转发"]): return
     player = coromega.get_player("@a")
     player.selector = player.player_name
-    await player.say(coromega.config["服务器内接受QQ群内转发消息的前缀"] + message)
+    await player.say(coromega.config["服务器内接受QQ群内转发消息的前缀"] + raw_msg)
