@@ -83,6 +83,10 @@ class Cqhttp:
             group_id = data.get("group_id", None)
             user_id = data.get("user_id", None)
             raw_msg = data.get("message", "")
+            name = sender.get("card", None)
+            nickname = sender.get("nickname", None)
+            if not name or name == "":
+                name = nickname
             asyncio.create_task(self.event_manager.run_event(
                 'when_cqhttp_msg',
                 ChatData(
@@ -90,9 +94,11 @@ class Cqhttp:
                     message_id = data.get("message_id", None),
                     msg = raw_msg.split(" "),
                     raw_msg = raw_msg,
-                    name = sender.get("card", None) or sender.get("nickname", None),
+                    data = data,
+                    name = name,
                     user_id = user_id,
                     group_id = group_id,
+                    nickname = nickname,
                     source_id = group_id or user_id,
                     source_type = data.get("message_type", None)
                 ), "__coromega__")

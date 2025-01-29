@@ -179,7 +179,7 @@ async def startup():
     uvicorn_logger.addHandler(handler)
     if config["记录日志"]:
         uvicorn_logger.addHandler(record_handler)
-    q.put(None)
+    await asyncio.to_thread(q.put, None)
     display = False
 app.add_event_handler("startup", startup)
 
