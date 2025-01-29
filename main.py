@@ -112,7 +112,7 @@ def on_exit():
         from KeepFunChat.tools import remove_ansi
         current_time = datetime.datetime.now()
         formatted_time = current_time.strftime('%Y-%m-%d#%H_%M_%S.%f')
-        open(log_dir / 'run' / f"{formatted_time}.log", "w+").write(remove_ansi(tee_instance.getvalue() or ""))
+        open(log_dir / 'run' / f"{formatted_time}.log", "w+", encoding = "utf-8").write(remove_ansi(tee_instance.getvalue() or ""))
     # 关闭StringIO对象
     tee_instance.captured_output.close()
 atexit.register(on_exit)
