@@ -9,8 +9,8 @@ def load_plugins(event_manager: EventManager, coromega: Coromega, config_dir: st
     sys.path.insert(0, str(plugins_dir))
 
     def load_from_json_file(json_file_path):
-        with open(json_file_path, 'r') as file:
-            config = json.load(file)
+        with open(json_file_path, 'r', encoding="utf-8") as file:
+            config = json.loads(file.read())
             if config.get("是否禁用", True): return
             plugin_name = config.get("名称")
             if plugin_name and plugin_name.endswith('.py'):

@@ -637,13 +637,13 @@ def connect_to_device(device_id=None):
         if device: return device
 
     devices = adb.device_list()
-    if not devices:
-        logger.warning("没有找到在线设备")
-        return None
 
-    logger.info("找到以下在线设备：")
-    for index, device in enumerate(devices):
-        logger.info(f"{index + 1}: {device.serial}")
+    if devices:
+        logger.info("找到以下在线设备：")
+        for index, device in enumerate(devices):
+            logger.info(f"{index + 1}: {device.serial}")
+    else:
+        logger.warning("没有找到在线设备")
 
     while True:
         logger.info("请输入设备的序号或手动输入设备：")

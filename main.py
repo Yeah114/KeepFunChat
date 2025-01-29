@@ -214,6 +214,7 @@ def run_server():
 def main():
     global device, display
     device = connect_to_device(config["默认连接设备"])
+    if not device: return
     init_clipper(device, data_dir / "Clipper.apk")
     start_clipper_service(device)
     logger.info(f"已启动服务器进程 [{process_id}]")
@@ -222,7 +223,12 @@ def main():
     thread = threading.Thread(target=run_server)
     thread.start()
     q.get()
-    requests.get(f"http://{address}/info")
+    while True:
+        try:
+            requests.get(f"http://{address}/info")
+            break
+        except:
+            pass
     display = True
     logger.info("应用程序启动完成")
     logger.info(f"Uvicorn在http://{address}上运行（按Ctrl+C退出）")

@@ -20,7 +20,8 @@ class Coromega:
 
     def load_config(self, config_path: str):
         self.config_path = config_path
-        config = json.load(open(self.config_path, "r")).get("配置", {})
+        with open(config_path, "r", encoding="utf-8") as file:
+            config = json.loads(file.read()).get("配置",{})
         if isinstance(self.config, AccessPath) and self.config.path != []:
             self.config.index_collection(config)
         else:
