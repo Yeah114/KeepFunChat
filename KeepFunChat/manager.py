@@ -82,12 +82,14 @@ class Cqhttp:
             sender = data.get("sender", {})
             group_id = data.get("group_id", None)
             user_id = data.get("user_id", None)
+            raw_msg = data.get("message", "")
             asyncio.create_task(self.event_manager.run_event(
                 'when_cqhttp_msg',
                 ChatData(
                     message_type = data.get("message_type", None),
                     message_id = data.get("message_id", None),
-                    msg = data.get("message", None),
+                    msg = raw_msg.split(" "),
+                    raw_msg = raw_msg,
                     name = sender.get("card", None) or sender.get("nickname", None),
                     user_id = user_id,
                     group_id = group_id,
