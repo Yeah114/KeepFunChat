@@ -1,0 +1,12 @@
+adbutils==2.8.0
+apkutils2==1.0.0
+BDXConverter==1.1.15
+BDXConverter==1.2.0
+fastapi==0.115.7
+prompt_toolkit==3.0.50
+Requests==2.32.3
+rich==13.9.4
+tqdm==4.67.1
+uiautomator2==3.2.8
+uvicorn==0.34.0
+websockets==14.2
