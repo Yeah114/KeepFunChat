@@ -6,7 +6,7 @@ import asyncio, json
 from datetime import datetime
 from .tools import AccessPath, AccessClass, logger
 
-default_get_result_ms_long = 2000
+default_get_result_ms_long = 1500
 class Coromega:
     def __init__(self, builder: Builder = None, device: Device = None, callback_manager: CallbackManager = None):
         self.builder = builder
@@ -55,7 +55,7 @@ class Coromega:
         if get_result:
             results = []
             while True:
-                result = await q.get
+                result = await q.get()
                 if not result:
                     break
                 results.append(result)

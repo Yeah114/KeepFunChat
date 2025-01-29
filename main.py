@@ -10,6 +10,8 @@ config_dir = main_dir / 'config'
 data_dir = main_dir / 'data'
 log_dir = main_dir / 'log'
 last_startup_time_filename = data_dir / "last_startup_time"
+os.makedirs(log_dir / "run", exist_ok = True)
+
 class BackgroundProgressBar:
     def __init__(self, total, postpone = 0.01, *args, **kwargs):
         self.total = total
@@ -20,7 +22,7 @@ class BackgroundProgressBar:
         self.kwargs = kwargs
 
     def start(self):
-        self.thread = threading.Thread(target=self._run)
+        self.thread = threading.Thread(target = self._run)
         self.thread.start()
 
     def _run(self):
@@ -197,7 +199,7 @@ async def handle_post(request: Request):
             await get_command_result.put(message)
             async def task():
                 ms = (get_command_result_ms - timestamp_ms) / 1000
-                time.sleep(ms)
+                await asyncio.sleep(ms)
                 get_commands_result = callback_manager.values.get("command_result", [])
                 if len(get_commands_result) > 0 and get_commands_result[0][0] == get_command_result:
                     await get_command_result.put(None)
@@ -206,7 +208,7 @@ async def handle_post(request: Request):
             callback_manager.values["command_result"][0].append(task)
             return
         else:
-            get_command_result.put(None)
+            await get_command_result.put(None)
             del get_commands_result[0]
 
     data = message.split(" 说 ", 1)
