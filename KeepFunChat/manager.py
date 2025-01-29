@@ -82,7 +82,7 @@ class Cqhttp:
             sender = data.get("sender", {})
             group_id = data.get("group_id", None)
             user_id = data.get("user_id", None)
-            raw_msg = data.get("message", "")
+            raw_msg = data.get("raw_message", "")
             name = sender.get("card", None)
             nickname = sender.get("nickname", None)
             if not name or name == "":
