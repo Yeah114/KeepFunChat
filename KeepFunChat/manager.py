@@ -93,7 +93,8 @@ class Cqhttp:
                     name = sender.get("card", None) or sender.get("nickname", None),
                     user_id = user_id,
                     group_id = group_id,
-                    source_id = group_id or user_id
+                    source_id = group_id or user_id,
+                    source_type = data.get("message_type", None)
                 ), "__coromega__")
             )
 
@@ -121,12 +122,12 @@ class Cqhttp:
             "params": params,
             "echo": echo
         }
-        await self.send(data)
+        await self.send(json.dumps(data))
         return self.callback_manager.use_callback(echo)
 
     def __getattr__(self, name):
         async def action(params):
-            self.request(name, params)
+            await self.request(name, params)
         return action
 
     """ Available soon..

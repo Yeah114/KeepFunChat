@@ -221,7 +221,7 @@ async def handle_post(request: Request):
     if name in callback_manager.callbacks:
         await callback_manager.set_value(raw_msg, name)
         return
-    chat_data = ChatData(name=name, msg=msg, raw_msg=raw_msg)
+    chat_data = ChatData(name = name, msg = msg, raw_msg = raw_msg)
     await event_manager.run_event('when_chat_msg', chat_data, "__coromega__")
 
     """ 相关代码已经移动到 menu.py
@@ -247,7 +247,7 @@ async def info():
     return PlainTextResponse("", status_code=200)
 
 def run_server():
-    uvicorn.run(app, host=config["主机"], port=config["端口"])
+    uvicorn.run(app, host = config["主机"], port = config["端口"])
 
 def main():
     global device, display
@@ -297,7 +297,7 @@ def main():
     logger.info(f"已启动服务器进程 [{process_id}]")
     logger.info("正在等待应用程序启动")
     display = False
-    thread = threading.Thread(target=run_server)
+    thread = threading.Thread(target = run_server)
     thread.start()
     q.get()
     while True:
