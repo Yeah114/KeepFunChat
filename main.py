@@ -167,7 +167,7 @@ async def startup():
     display = True
     coromega = Coromega(builder, device, callback_manager)
     if config["CQHTTP正向WebSocket连接地址"]:
-        cqhttp = Cqhttp(config["CQHTTP正向WebSocket连接地址"], config["CQHTTP连接密钥"])
+        cqhttp = Cqhttp(config["CQHTTP正向WebSocket连接地址"], config["CQHTTP连接密钥"]), event_manager
         await cqhttp.connect()
         coromega.cqhttp = cqhttp
     else:

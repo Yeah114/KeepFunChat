@@ -45,7 +45,7 @@ class CallbackManager:
         return result
 
 class Cqhttp:
-    def __init__(self, uri, token, autoreconnect=True, reconnect_interval=2, max_reconnect_attempts=5):
+    def __init__(self, uri, token, event_manager, autoreconnect=True, reconnect_interval=2, max_reconnect_attempts=5):
         self.uri = uri
         self.token = token
         self.autoreconnect = autoreconnect
@@ -53,6 +53,7 @@ class Cqhttp:
         self.max_reconnect_attempts = max_reconnect_attempts
         self.headers = {"Authorization": f"Bearer {self.token}"}
         self.callback_manager = CallbackManager()
+        self.event_manager = event_manager
         self.client = WebSocketClient(
             uri=self.uri,
             headers=self.headers,
@@ -75,13 +76,13 @@ class Cqhttp:
         if echo:
             self.callback_manager.set_value(data, echo)
             return
-        asyncio.create_task(event_manager.run_event('when_cqhttp_data', data, "__coromega__"))
+        asyncio.create_task(self.event_manager.run_event('when_cqhttp_data', data, "__coromega__"))
         post_type = data.get("post_type", None)
         if post_type == "message":
             sender = data.get("sender", {})
             group_id = data.get("group_id", None)
             user_id = data.get("user_id", None)
-            asyncio.create_task(event_manager.run_event(
+            asyncio.create_task(self.event_manager.run_event(
                 'when_cqhttp_msg',
                 ChatData(
                     message_type = data.get("message_type", None),
