@@ -4,11 +4,7 @@ from .config import data_dir
 logger = logging.getLogger("Yeah")
 
 def cq_code_escape(text):
-    text = text
-        .replace("&amp;", "&") \
-        .replace("&#91;", "[") \
-        .replace("&#93;", "]") \
-        .replace("&#44;", ",") \
+    text = text.replace("&amp;", "&").replace("&#91;", "[").replace("&#93;", "]").replace("&#44;", ",")
     return text
 
 def restart_program():
