@@ -1,6 +1,6 @@
 from .tools import WebSocketClient
 from .event import ChatData
-from .tools import logger
+from .tools import logger, cq_code_escape
 import asyncio, json, traceback, random
 
 class CallbackManager:
@@ -82,7 +82,7 @@ class Cqhttp:
             sender = data.get("sender", {})
             group_id = data.get("group_id", None)
             user_id = data.get("user_id", None)
-            raw_msg = data.get("raw_message", "")
+            raw_msg = cq_code_escape(data.get("raw_message", ""))
             name = sender.get("card", None)
             nickname = sender.get("nickname", None)
             if not name or name == "":

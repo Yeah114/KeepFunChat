@@ -1,4 +1,4 @@
-from KeepFunChat.tools import convert_cqhttp_source, convert_cqhttp_target, prefix
+from KeepFunChat.tools import convert_cqhttp_source, convert_cqhttp_target, prefix, cq_code_escape
 from KeepFunChat.event import ChatData, on_startup  # 导入ChatData类和on_startup装饰器
 from KeepFunChat.core import Coromega, logger  # 导入coromega核心模块和日志记录器
 coromega = Coromega()
