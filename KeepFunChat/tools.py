@@ -1,3 +1,5 @@
+version = open("version", "r", encoding="utf-8").read()
+
 import re, json, inspect, ctypes, asyncio, websockets, logging, requests, os, zipfile, tempfile, shutil, sys
 from tqdm.rich import tqdm
 from .config import data_dir

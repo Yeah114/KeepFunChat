@@ -45,7 +45,6 @@ if os.path.exists(last_startup_time_filename):
     program_loading_progress = BackgroundProgressBar(int(last_startup_time * 100), postpone = 0.01, desc = "正在启动程序")
     program_loading_progress.start()
 
-version = open("version", "r", encoding="utf-8").read()
 import sys, io
 global display
 display = True
@@ -118,7 +117,7 @@ def on_exit():
 atexit.register(on_exit)
 
 from fastapi import FastAPI, Request
-from KeepFunChat.tools import remove_ansi, repair_skin_title, stop_thread, download_file, update_directory, restart_program
+from KeepFunChat.tools import remove_ansi, repair_skin_title, stop_thread, download_file, update_directory, restart_program, version
 from KeepFunChat.FunBuilder import Builder, connect_to_device, handler, init_clipper, start_clipper_service
 from KeepFunChat.manager import CallbackManager, Cqhttp
 from KeepFunChat.event import EventManager, event, EventData, ChatData

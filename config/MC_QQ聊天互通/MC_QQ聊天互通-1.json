@@ -22,7 +22,8 @@
             ],
             "*": [
                 "list",
-                "listd"
+                "listd",
+                "get_version"
             ],
             "DevilBOT#3582610370@群聊:980351876": [
                 ""
