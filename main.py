@@ -156,7 +156,7 @@ today = str(datetime.date.today())
 address = f'127.0.0.1:{config["端口"]}'
 process_id = os.getpid()
 event_manager = EventManager()
-record_handler = logging.handlers.RotatingFileHandler(log_dir / f"{today}.log",mode="a")
+record_handler = logging.handlers.RotatingFileHandler(log_dir / f"{today}.log",mode="a",encoding="utf-8") # 修复了在windows中日志记录 中文乱码 的情况
 record_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
 if config["记录日志"]:
     logger.addHandler(record_handler)
@@ -301,8 +301,13 @@ def main():
     q.get()
     while True:
         try:
-            requests.get(f"http://{address}/info")
-            break
+            res=requests.get(f"http://127.0.0.1:{config['端口']}/info")
+            if res.status_code == 200:
+                break
+            else:
+                logger.error(f"访问127.0.0.1:{config['端口']}出现了错误,请将错误信息发送给开发者")
+                logger.error(res.text)
+                raise ConnectionError(f"访问127.0.0.1:{config['端口']}出现了错误: {res.status_code} {res.text}")
         except:
             pass
     display = True
