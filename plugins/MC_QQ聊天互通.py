@@ -1,4 +1,4 @@
-from KeepFunChat.tools import convert_cqhttp_source, convert_cqhttp_target, prefix, cq_code_escape
+from KeepFunChat.tools import convert_cqhttp_source, convert_cqhttp_target, prefix, restart_program
 from KeepFunChat.event import ChatData, on_startup  # 导入ChatData类和on_startup装饰器
 from KeepFunChat.core import Coromega, logger  # 导入coromega核心模块和日志记录器
 coromega = Coromega()
@@ -41,6 +41,8 @@ async def qq_to_game(chat_data: ChatData):
         execute = False
         for target, commands in coromega.config["命令权限"].items():
             if (target == "*" or chat_data.user_id == convert_cqhttp_target(target).get("user_id", None)) and (prefix(command, commands) or "" in commands):
+                if raw_msg == "/restart_program":
+                    restart_program()
                 await coromega.send_player_cmd(raw_msg)
                 execute = True
                 break
