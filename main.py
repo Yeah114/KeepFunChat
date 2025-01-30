@@ -153,7 +153,7 @@ app = FastAPI()
 callback_manager = CallbackManager()
 builder = Builder()
 today = str(datetime.date.today())
-address = f'{config["主机"]}:{config["端口"]}'
+address = f'127.0.0.1:{config["端口"]}'
 process_id = os.getpid()
 event_manager = EventManager()
 record_handler = logging.handlers.RotatingFileHandler(log_dir / f"{today}.log",mode="a")
