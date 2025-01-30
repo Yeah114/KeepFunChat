@@ -55,4 +55,4 @@ async def qq_to_game(chat_data: ChatData):
     if prefix(raw_msg, coromega.config["QQ消息没有这些前缀时才转发"]) and not prefix(raw_msg, coromega.config["QQ消息满足以下任一前缀时才转发"]): return
     player = coromega.get_player("@a")
     player.selector = player.player_name
-    await player.say(coromega.config["服务器内接受QQ群内转发消息的前缀"] + raw_msg)
+    await player.say(coromega.config["服务器内接受QQ群内转发消息的前缀"] + message)
