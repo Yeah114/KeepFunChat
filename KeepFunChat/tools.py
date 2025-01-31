@@ -75,7 +75,7 @@ def update_directory(zip_path, zip_folder, target_folder, skip_extensions=None):
 
 def download_file(url: str, filename: str, size: int = 0):
     # 发起网络请求获取文件内容
-    with requests.get(url, stream=True) as r:
+    with requests.get(url, stream = True, verify = False) as r:
         # 获取文件总大小
         total_size = int(r.headers.get('content-length', size))
         # 初始化tqdm进度条
