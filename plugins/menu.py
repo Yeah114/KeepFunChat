@@ -4,9 +4,6 @@ Author: Mono
 """
 import asyncio
 import inspect
-import os
-import json
-import queue
 from KeepFunChat.config import config
 from KeepFunChat.event import ChatData, on_startup  # 导入ChatData类和on_startup装饰器
 from KeepFunChat.FunBuilder import logger  # 导入日志记录器
@@ -14,9 +11,6 @@ from KeepFunChat.core import Coromega  # 导入coromega核心模块
 from KeepFunChat.tools import prefix
 coromega = Coromega()
 # 使用on_startup装饰器，在程序启动时执行该函数
-q = queue.Queue()
-q1 = queue.Queue()
-
 @on_startup()
 async def startup(omega):
    # 启动coromega模块，传入omega对象

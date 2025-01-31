@@ -3,6 +3,7 @@ start_time = time.time()
 from tqdm.rich import tqdm, trange
 from pathlib import Path
 import threading, warnings
+from KeepFunChat.constans import *
 warnings.filterwarnings("ignore")
 main_dir = Path(__file__).parent
 plugins_dir = main_dir / 'plugins'
@@ -257,6 +258,10 @@ def main():
     except:
         pass
     time.sleep(0.02)
+    if os.name == "nt":
+        print(KEEPFUNCHAT_LOGO)
+    else:
+        print(KEEPFUNCHAT_LOGO_LITTLE)
     logger.info(f"启动用时：{startup_time}秒")
     open(data_dir / "last_startup_time", "w+", encoding = "utf-8").write(str(startup_time))
     logger.info(f"当前版本：{version}")
