@@ -6,6 +6,9 @@
     "拦截屏蔽词": true,
     "CQHTTP正向WebSocket连接地址": "",
     "CQHTTP连接密钥": "114514",
+    "版本获取连接": "https://raw.kkgithub.com/Yeah114/KeepFunChat/refs/heads/main/version",
+    "更新包获取链接": "https://kkgithub.com/Yeah114/KeepFunChat/archive/refs/heads/main.zip",
+    "更新包大小获取链接": "https://kkgithub.com/Yeah114/KeepFunChat/raw/refs/heads/main/size",
     "游戏菜单模块配置": {
         "菜单选项": {
             "默认菜单": {

@@ -263,7 +263,7 @@ def main():
     logger.info("正在获取更新中...")
     new_version = None
     try:
-        new_version = requests.get(f"https://ghproxy.cn/https://raw.githubusercontent.com/Yeah114/KeepFunChat/refs/heads/main/version")
+        new_version = requests.get(config.get("版本获取连接", "https://raw.kkgithub.com/Yeah114/KeepFunChat/refs/heads/main/version"))
         new_version = new_version.text
     except Exception as error:
         tb = error.__traceback__
@@ -277,7 +277,7 @@ def main():
         logger.info("正在获取更新文件大小中...")
         version_size = 0
         try:
-            version_size = requests.get(f"https://ghproxy.cn/https://raw.githubusercontent.com/Yeah114/KeepFunChat/refs/heads/main/size")
+            version_size = requests.get(config.get("更新包大小获取链接", "https://kkgithub.com/Yeah114/KeepFunChat/raw/refs/heads/main/size"))
             version_size = int(version_size.text)
             logger.info(f"更新文件大小为：{version_size}B")
         except Exception as error:
@@ -286,7 +286,7 @@ def main():
             logger.error(''.join(traceback.format_tb(tb)))
             logger.error(str(error))
         logger.info("正在下载中...")
-        download_file("https://ghproxy.cn/https://github.com/Yeah114/KeepFunChat/archive/refs/heads/main.zip", "KeepFunChat.zip", version_size)
+        download_file(config.get("更新包获取链接", "https://kkgithub.com/Yeah114/KeepFunChat/archive/refs/heads/main.zip"), "KeepFunChat.zip", version_size)
         update_directory("KeepFunChat.zip", "KeepFunChat-main", ".", [".json"])
         restart_program()
     device = connect_to_device(config["默认连接设备"])
