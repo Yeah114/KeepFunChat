@@ -637,7 +637,9 @@ def connect_to_device(device_id=None):
         if device: return device
 
     devices = adb.device_list()
-
+    if os.name == "nt":
+        import socket
+        logger.info("检测当您的系统为Windows,您系统的局域网ip为:%s"% socket.gethostbyname(socket.gethostname()))
     if devices:
         logger.info("找到以下在线设备：")
         for index, device in enumerate(devices):
