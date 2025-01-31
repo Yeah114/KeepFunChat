@@ -268,7 +268,7 @@ def main():
     logger.info("正在获取更新中...")
     new_version = None
     try:
-        new_version = requests.get(config.get("版本获取连接", "https://raw.kkgithub.com/Yeah114/KeepFunChat/refs/heads/main/version"))
+        new_version = requests.get(config.get("版本获取连接", "https://raw.kkgithub.com/Yeah114/KeepFunChat/refs/heads/main/version"), verify = False)
         new_version = new_version.text
     except Exception as error:
         tb = error.__traceback__
@@ -282,7 +282,7 @@ def main():
         logger.info("正在获取更新文件大小中...")
         version_size = 0
         try:
-            version_size = requests.get(config.get("更新包大小获取链接", "https://kkgithub.com/Yeah114/KeepFunChat/raw/refs/heads/main/size"))
+            version_size = requests.get(config.get("更新包大小获取链接", "https://kkgithub.com/Yeah114/KeepFunChat/raw/refs/heads/main/size"), verify = False)
             version_size = int(version_size.text)
             logger.info(f"更新文件大小为：{version_size}B")
         except Exception as error:
