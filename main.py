@@ -5,11 +5,8 @@ from tqdm.rich import tqdm, trange
 from pathlib import Path
 import threading, warnings
 from KeepFunChat.constans import *
-<<<<<<< HEAD
 from KeepFunChat.config import config
 from KeepFunChat.lolcat import lolcat, options
-=======
->>>>>>> 208383129cae3586781eb3aa597036049846539f
 warnings.filterwarnings("ignore")
 main_dir = Path(__file__).parent
 plugins_dir = main_dir / 'plugins'
