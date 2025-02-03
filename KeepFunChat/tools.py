@@ -75,7 +75,7 @@ def update_directory(zip_path, zip_folder, target_folder, skip_extensions=None):
 
 def download_file(url: str, filename: str, size: int = 0):
     # 发起网络请求获取文件内容
-    with requests.get(url, stream=True) as r:
+    with requests.get(url, stream = True, verify = False) as r:
         # 获取文件总大小
         total_size = int(r.headers.get('content-length', size))
         # 初始化tqdm进度条
@@ -263,7 +263,7 @@ class AccessClass:
             # 检查是否使用了await
             is_awaited = 'await' in code_line
 
-            logger.warning("CQHTTP 方法被调用，但被阻止了(因为被禁用)")
+            logger.warning("方法被调用，但被阻止了(因为被禁用)")
             logger.warning(f"调用者文件路径: {file_path}")
             logger.warning(f"调用者行号: {line_number}")
             logger.warning(f"调用者代码行: {code_line}")

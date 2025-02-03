@@ -1,8 +1,12 @@
-import time, os
+started = False # 标记程序是否已启动
+import time, os, re
 start_time = time.time()
 from tqdm.rich import tqdm, trange
 from pathlib import Path
 import threading, warnings
+from KeepFunChat.constans import *
+from KeepFunChat.config import config
+from KeepFunChat.lolcat import lolcat, options
 warnings.filterwarnings("ignore")
 main_dir = Path(__file__).parent
 plugins_dir = main_dir / 'plugins'
@@ -11,6 +15,121 @@ data_dir = main_dir / 'data'
 log_dir = main_dir / 'log'
 last_startup_time_filename = data_dir / "last_startup_time"
 os.makedirs(log_dir / "run", exist_ok = True)
+ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+url_escape = re.compile(r'\x1B]8;id=\d+;.+?//.+\\?')
+def dyeing(s):
+    if not config.get("终端文本变彩", False): return s
+    def remove_ansi(s):
+        # 移除字符串中的ANSI转义序列
+        return ansi_escape.sub('', s)
+    
+    def process_string(s):
+        return lolcat.dyeing(s, options)
+    
+    url = url_escape.search(s)
+    s = url_escape.sub('🎍', s)
+    # 将字符串s分割成两部分：ANSI转义序列和非ANSI文本
+    parts = ansi_escape.split(s)
+    processed_parts = []
+    
+    for part in parts:
+        if ansi_escape.match(part):
+            # 如果是ANSI转义序列，则直接添加到处理后的部分列表
+            processed_parts.append(part)
+        else:
+            # 如果是非ANSI文本，则先移除ANSI转义序列，处理后再添加
+            processed_part = remove_ansi(part)
+            processed_part = process_string(processed_part)
+            processed_parts.append(processed_part)
+    
+    # 将处理后的部分重新组合成一个字符串
+    processed_string = ''.join(processed_parts)
+    if url:
+        processed_string = processed_string[:-2].replace('🎍', url.group()) + "\n"
+    return processed_string
+
+import sys, io
+global display, display_cache
+display = True
+display_cache = ""
+class Tee(io.TextIOBase):
+    def __init__(self, original_stdout, original_stderr):
+        self.original_stdout = original_stdout
+        self.original_stderr = original_stderr
+        self.captured_output = io.StringIO()
+        self.captured_error = io.StringIO()
+
+    def write(self, s):
+        global display_cache
+        s = dyeing(s)
+        if display:
+            self.original_stdout.write(s)
+            self.captured_output.write(s)
+        else:
+            display_cache += s
+
+    def flush(self):
+        if display:
+            self.original_stdout.flush()
+            self.captured_output.flush()
+
+    def error_write(self, s):
+        global display_cache
+        s = dyeing(s)
+        if display:
+            self.original_stderr.write(s)
+            self.captured_error.write(s)
+        else:
+            display_cache += s
+
+    def error_flush(self):
+        if display:
+            self.original_stderr.flush()
+            self.captured_error.flush()
+
+    def getvalue(self):
+        return self.captured_output.getvalue()
+
+    def geterrorvalue(self):
+        return self.captured_error.getvalue()
+
+    def isatty(self):
+        return self.original_stdout.isatty()
+
+# 创建Tee对象，它将同时写入StringIO和原始stdout以及stderr
+original_stdout = sys.stdout
+original_stderr = sys.stderr
+sys.stdout = Tee(original_stdout, original_stderr)
+sys.stderr = sys.stdout
+
+import atexit
+import argparse
+if __name__ == '__main__':
+    # 创建 ArgumentParser 对象
+    parser = argparse.ArgumentParser(description='KeepFunChat：一个使用TTS和ADB的Minecraft聊天框插件框架')
+
+    # 添加 --debug 选项，无需参数
+    parser.add_argument('--debug', action='store_true', help="开启 debug 模式")
+    def show_help():
+        global display, display_cache
+        if not started:
+            display = True
+            display_text = display_cache
+            display_text = "Authors: Yeah Mono\n\n" + display_text
+            display_text = display_text.replace("usage", "用法").replace("options", "选项").replace("show this help message and exit", "显示此帮助消息并退出")
+            display_text = display_text + "\nGitHub: https://github.com/Yeah114/KeepFunChat"
+            display_lines = display_text.strip().split("\n")
+            for display_line in display_lines:
+                lolcat.println(display_line, options)
+            display_cache = ""
+    atexit.register(show_help)
+
+    display = False
+    # 解析参数
+    args = parser.parse_args()
+    started = True
+    display = True
+    display_cache = ""
 
 class BackgroundProgressBar:
     def __init__(self, total, postpone = 0.01, *args, **kwargs):
@@ -45,52 +164,6 @@ if os.path.exists(last_startup_time_filename):
     program_loading_progress = BackgroundProgressBar(int(last_startup_time * 100), postpone = 0.01, desc = "正在启动程序")
     program_loading_progress.start()
 
-import sys, io
-global display
-display = True
-class Tee(io.TextIOBase):
-    def __init__(self, original_stdout, original_stderr):
-        self.original_stdout = original_stdout
-        self.original_stderr = original_stderr
-        self.captured_output = io.StringIO()
-        self.captured_error = io.StringIO()
-
-    def write(self, s):
-        if display:
-            self.original_stdout.write(s)
-            self.captured_output.write(s)
-
-    def flush(self):
-        if display:
-            self.original_stdout.flush()
-            self.captured_output.flush()
-
-    def error_write(self, s):
-        if display:
-            self.original_stderr.write(s)
-            self.captured_error.write(s)
-
-    def error_flush(self):
-        if display:
-            self.original_stderr.flush()
-            self.captured_error.flush()
-
-    def getvalue(self):
-        return self.captured_output.getvalue()
-
-    def geterrorvalue(self):
-        return self.captured_error.getvalue()
-
-    def isatty(self):
-        return self.original_stdout.isatty()
-
-# 创建Tee对象，它将同时写入StringIO和原始stdout以及stderr
-original_stdout = sys.stdout
-original_stderr = sys.stderr
-sys.stdout = Tee(original_stdout, original_stderr)
-sys.stderr = sys.stdout
-
-import atexit
 def on_exit():
     print("")
     text = "Good Bye! --by Yeah"
@@ -117,13 +190,12 @@ def on_exit():
 atexit.register(on_exit)
 
 from fastapi import FastAPI, Request
-from KeepFunChat.tools import remove_ansi, repair_skin_title, stop_thread, download_file, update_directory, restart_program, version
+from KeepFunChat.tools import remove_ansi, repair_skin_title, stop_thread, download_file, update_directory, restart_program, version, AccessClass
 from KeepFunChat.FunBuilder import Builder, connect_to_device, handler, init_clipper, start_clipper_service
 from KeepFunChat.manager import CallbackManager, Cqhttp
 from KeepFunChat.event import EventManager, event, EventData, ChatData
 from KeepFunChat.core import Coromega, logger
 from KeepFunChat.loader import load_plugins
-from KeepFunChat.config import config
 from fastapi.responses import PlainTextResponse
 from rich.logging import RichHandler
 import uvicorn, asyncio, logging, datetime, requests, queue, signal, time, inspect, tracemalloc, traceback
@@ -257,13 +329,17 @@ def main():
     except:
         pass
     time.sleep(0.02)
+    if os.name == "nt":
+        print(KEEPFUNCHAT_LOGO)
+    else:
+        print(KEEPFUNCHAT_LOGO_LITTLE)
     logger.info(f"启动用时：{startup_time}秒")
     open(data_dir / "last_startup_time", "w+", encoding = "utf-8").write(str(startup_time))
     logger.info(f"当前版本：{version}")
     logger.info("正在获取更新中...")
     new_version = None
     try:
-        new_version = requests.get(config.get("版本获取连接", "https://raw.kkgithub.com/Yeah114/KeepFunChat/refs/heads/main/version"))
+        new_version = requests.get(config.get("版本获取连接", "https://raw.kkgithub.com/Yeah114/KeepFunChat/refs/heads/main/version"), verify = False)
         new_version = new_version.text
     except Exception as error:
         tb = error.__traceback__
@@ -277,7 +353,7 @@ def main():
         logger.info("正在获取更新文件大小中...")
         version_size = 0
         try:
-            version_size = requests.get(config.get("更新包大小获取链接", "https://kkgithub.com/Yeah114/KeepFunChat/raw/refs/heads/main/size"))
+            version_size = requests.get(config.get("更新包大小获取链接", "https://kkgithub.com/Yeah114/KeepFunChat/raw/refs/heads/main/size"), verify = False)
             version_size = int(version_size.text)
             logger.info(f"更新文件大小为：{version_size}B")
         except Exception as error:
@@ -289,7 +365,10 @@ def main():
         download_file(config.get("更新包获取链接", "https://kkgithub.com/Yeah114/KeepFunChat/archive/refs/heads/main.zip"), "KeepFunChat.zip", version_size)
         update_directory("KeepFunChat.zip", "KeepFunChat-main", ".", [".json"])
         restart_program()
-    device = connect_to_device(config["默认连接设备"])
+    if args.debug:
+        device = AccessClass() # 未制作完成...
+    else:
+        device = connect_to_device(config["默认连接设备"])
     if not device: return
     init_clipper(device, data_dir / "Clipper.apk")
     start_clipper_service(device)
