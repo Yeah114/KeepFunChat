@@ -328,7 +328,7 @@ def main():
         program_loading_progress.stop()
     except:
         pass
-    time.sleep(0.02)
+    time.sleep(0.05)
     if os.name == "nt":
         print(KEEPFUNCHAT_LOGO)
     else:
